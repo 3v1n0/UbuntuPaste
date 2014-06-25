@@ -3,10 +3,9 @@
 
 import itertools
 import os
-import sys
 import pwd
+import sys
 import threading
-import urllib.request, urllib.parse, urllib.error
 import webbrowser
 
 import sublime
@@ -108,29 +107,53 @@ class Settings(object):
 class Paster(threading.Thread):
     """Paste code snippets to ubuntu pastebin."""
 
+    HEADERS = {'User-Agent': 'SublimeText{0}'.format(sublime.version()[0])}
+    TIMEOUT = 5
+
     def __init__(self, url, **kwargs):
         self.url = url
         self.data = kwargs
         self.error = None
         self.result = None
+        self.__urlopen = getattr(self, "_{0}__urlopen{1}".format(self.__class__.__name__, sys.version_info[0]))
         threading.Thread.__init__(self)
 
-    def run(self):
+    def __urlopen2(self):
+        import urllib, urllib2
+
+        try:
+            request = urllib2.Request(
+                self.url, urllib.urlencode(self.data), headers=self.HEADERS
+            )
+            response = urllib2.urlopen(request, timeout=self.TIMEOUT)
+        except urllib2.HTTPError as err:
+            self.error = 'HTTP error {0}.'.format(err.code)
+        except urllib2.URLError as err:
+            self.error = 'URL error {0}.'.format(err.reason)
+        else:
+            self.result = response.url
+
+    def __urlopen3(self):
+        import urllib.request, urllib.parse, urllib.error
+
         try:
             data = bytearray(
                 urllib.parse.urlencode(self.data),
                 encoding=sys.getfilesystemencoding()
             )
             request = urllib.request.Request(
-                self.url, data, headers={'User-Agent': 'SublimeText2'}
+                self.url, data, headers=self.HEADERS
             )
-            response = urllib.request.urlopen(request, timeout=5)
+            response = urllib.request.urlopen(request, timeout=self.TIMEOUT)
         except urllib.error.HTTPError as err:
             self.error = 'HTTP error {0}.'.format(err.code)
         except urllib.error.URLError as err:
             self.error = 'URL error {0}.'.format(err.reason)
         else:
             self.result = response.url
+
+    def run(self):
+        self.__urlopen()
 
 
 class UbuntupasteCommand(sublime_plugin.TextCommand):
