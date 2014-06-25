@@ -115,45 +115,36 @@ class Paster(threading.Thread):
         self.data = kwargs
         self.error = None
         self.result = None
-        self.__do_req = getattr(self, "_{0}__do_req{1}".format(self.__class__.__name__, sys.version_info[0]))
+
+        try:
+            import urllib, urllib2
+            self.__urlencode = urllib.urlencode
+            self.__urlrequest = urllib2
+            self.__urlerror = urllib2
+        except ImportError:
+            import urllib.request, urllib.parse, urllib.error
+            self.__urlencode = urllib.parse.urlencode
+            self.__urlrequest = urllib.request
+            self.__urlerror = urllib.error
+
         threading.Thread.__init__(self)
 
-    def __do_req2(self):
-        import urllib, urllib2
-
-        try:
-            request = urllib2.Request(
-                self.url, urllib.urlencode(self.data), headers=self.HEADERS
-            )
-            response = urllib2.urlopen(request, timeout=self.TIMEOUT)
-        except urllib2.HTTPError as err:
-            self.error = 'HTTP error {0}.'.format(err.code)
-        except urllib2.URLError as err:
-            self.error = 'URL error {0}.'.format(err.reason)
-        else:
-            self.result = response.url
-
-    def __do_req3(self):
-        import urllib.request, urllib.parse, urllib.error
-
+    def run(self):
         try:
             data = bytearray(
-                urllib.parse.urlencode(self.data),
+                self.__urlencode(self.data),
                 encoding=sys.getfilesystemencoding()
             )
-            request = urllib.request.Request(
+            request = self.__urlrequest.Request(
                 self.url, data, headers=self.HEADERS
             )
-            response = urllib.request.urlopen(request, timeout=self.TIMEOUT)
-        except urllib.error.HTTPError as err:
+            response = self.__urlrequest.urlopen(request, timeout=self.TIMEOUT)
+        except self.__urlerror.HTTPError as err:
             self.error = 'HTTP error {0}.'.format(err.code)
-        except urllib.error.URLError as err:
+        except self.__urlerror.URLError as err:
             self.error = 'URL error {0}.'.format(err.reason)
         else:
             self.result = response.url
-
-    def run(self):
-        self.__do_req()
 
 
 class UbuntupasteCommand(sublime_plugin.TextCommand):
