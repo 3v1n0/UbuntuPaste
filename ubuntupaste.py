@@ -115,10 +115,10 @@ class Paster(threading.Thread):
         self.data = kwargs
         self.error = None
         self.result = None
-        self.__urlopen = getattr(self, "_{0}__urlopen{1}".format(self.__class__.__name__, sys.version_info[0]))
+        self.__do_req = getattr(self, "_{0}__do_req{1}".format(self.__class__.__name__, sys.version_info[0]))
         threading.Thread.__init__(self)
 
-    def __urlopen2(self):
+    def __do_req2(self):
         import urllib, urllib2
 
         try:
@@ -133,7 +133,7 @@ class Paster(threading.Thread):
         else:
             self.result = response.url
 
-    def __urlopen3(self):
+    def __do_req3(self):
         import urllib.request, urllib.parse, urllib.error
 
         try:
@@ -153,7 +153,7 @@ class Paster(threading.Thread):
             self.result = response.url
 
     def run(self):
-        self.__urlopen()
+        self.__do_req()
 
 
 class UbuntupasteCommand(sublime_plugin.TextCommand):
