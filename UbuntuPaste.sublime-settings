@@ -37,7 +37,8 @@
         "restructuredtext": "rst",
         "shell-unix-generic": "bash",
         "sql": "sql",
-        "xml": "xml"
+        "xml": "xml",
+        "vala": "csharp"
     },
 
     // The pastebin URL.
