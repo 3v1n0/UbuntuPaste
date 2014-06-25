@@ -3,10 +3,10 @@
 
 import itertools
 import os
+import sys
 import pwd
 import threading
-import urllib
-import urllib2
+import urllib.request, urllib.parse, urllib.error
 import webbrowser
 
 import sublime
@@ -34,7 +34,7 @@ class UserInterface(object):
 
     def progress(self, url):
         """Show pasting progress."""
-        dots = '.' * (self.count.next() % 4)
+        dots = '.' * (next(self.count) % 4)
         self.status('Pasting to', url, '[', dots.ljust(3), ']')
 
     def error(self, *contents):
@@ -117,13 +117,17 @@ class Paster(threading.Thread):
 
     def run(self):
         try:
-            request = urllib2.Request(
-                self.url, urllib.urlencode(self.data),
-                headers={'User-Agent': 'SublimeText2'})
-            response = urllib2.urlopen(request, timeout=5)
-        except urllib2.HTTPError as err:
+            data = bytearray(
+                urllib.parse.urlencode(self.data),
+                encoding=sys.getfilesystemencoding()
+            )
+            request = urllib.request.Request(
+                self.url, data, headers={'User-Agent': 'SublimeText2'}
+            )
+            response = urllib.request.urlopen(request, timeout=5)
+        except urllib.error.HTTPError as err:
             self.error = 'HTTP error {0}.'.format(err.code)
-        except urllib2.URLError as err:
+        except urllib.error.URLError as err:
             self.error = 'URL error {0}.'.format(err.reason)
         else:
             self.result = response.url
