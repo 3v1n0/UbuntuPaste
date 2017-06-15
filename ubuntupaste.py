@@ -120,12 +120,11 @@ class Paster(threading.Thread):
             import urllib, urllib2
             self.__urlencode = urllib.urlencode
             self.__urlrequest = urllib2
-            self.__urlerror = urllib2
         except ImportError:
-            import urllib.request, urllib.parse, urllib.error
-            self.__urlencode = urllib.parse.urlencode
+            import urllib.request
+            from urllib.parse import urlencode
+            self.__urlencode = urlencode
             self.__urlrequest = urllib.request
-            self.__urlerror = urllib.error
 
         threading.Thread.__init__(self)
 
@@ -139,10 +138,8 @@ class Paster(threading.Thread):
                 self.url, data, headers=self.HEADERS
             )
             response = self.__urlrequest.urlopen(request, timeout=self.TIMEOUT)
-        except self.__urlerror.HTTPError as err:
-            self.error = 'HTTP error {0}.'.format(err.code)
-        except self.__urlerror.URLError as err:
-            self.error = 'URL error {0}.'.format(err.reason)
+        except Exception as err:
+            self.error = 'Plugin error: {0}.'.format(err)
         else:
             self.result = response.url
 
