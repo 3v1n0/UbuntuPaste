@@ -3,7 +3,7 @@ Ubuntu Paste
 ============
 
 This Sublime Text 2 and 3 plugin can be used to paste code snippets on
-http://pastebin.ubuntu.com/
+https://pastebin.ubuntu.com/
 
 Installation
 ============

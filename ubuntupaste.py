@@ -148,7 +148,7 @@ class Paster(threading.Thread):
 
 
 class UbuntupasteCommand(sublime_plugin.TextCommand):
-    """Paste code snippets on http://pastebin.ubuntu.com/."""
+    """Paste code snippets on https://pastebin.ubuntu.com/."""
 
     def __init__(self, *args, **kwargs):
         self.ui = None
